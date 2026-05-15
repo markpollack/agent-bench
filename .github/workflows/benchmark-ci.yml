@@ -19,7 +19,7 @@ jobs:
   benchmark-and-deploy:
     name: Run Benchmarks & Deploy Results
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'spring-ai-community' }}
+    if: ${{ github.repository_owner == 'markpollack' }}
     permissions:
       contents: read
       pages: write
@@ -36,7 +36,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
 

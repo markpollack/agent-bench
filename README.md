@@ -1,13 +1,13 @@
 # Agent Bench
 
-📖 **[Documentation](https://springaicommunity.mintlify.app/projects/incubating/agent-bench)**
+📖 **[Documentation](https://lab.pollack.ai/projects/agent-bench)**
 
-Benchmarking framework for AI coding agents on enterprise Java tasks. Defines benchmarks as YAML, launches any CLI agent, grades results with cascaded judge tiers from [Agent Judge](https://github.com/spring-ai-community/agent-judge).
+Benchmarking framework for AI coding agents on enterprise Java tasks. Defines benchmarks as YAML, launches any CLI agent, grades results with cascaded judge tiers from [Agent Judge](https://github.com/markpollack/agent-judge).
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/spring-ai-community/agent-bench.git
+git clone https://github.com/markpollack/agent-bench.git
 cd agent-bench
 ./mvnw clean install -DskipTests
 ```
@@ -41,7 +41,7 @@ provide → setup scripts → agent → post scripts → grade → result.json
 2. **Setup** scripts run in the workspace (clone repo, compile, measure baseline)
 3. **Agent** executes — any CLI tool that reads `INSTRUCTION.md` and modifies the workspace
 4. **Post** scripts run (build, test, generate reports)
-5. **Grade** evaluates the workspace with a cascaded jury from [Agent Judge](https://github.com/spring-ai-community/agent-judge)
+5. **Grade** evaluates the workspace with a cascaded jury from [Agent Judge](https://github.com/markpollack/agent-judge)
 
 ## Benchmark Format
 
@@ -210,8 +210,8 @@ Judge judge = factory.createFromConfig(benchmark.juryConfig());
 
 ## Related Projects
 
-- **[Agent Judge](https://github.com/spring-ai-community/agent-judge)** — Cascaded judge framework (core dependency)
-- **[Agent Client](https://github.com/spring-ai-community/agent-client)** — CLI agent integrations (Claude, Gemini)
+- **[Agent Judge](https://github.com/markpollack/agent-judge)** — Cascaded judge framework (core dependency)
+- **[Agent Client](https://github.com/markpollack/agent-client)** — CLI agent integrations (Claude, Gemini)
 
 ## Contributing
 
@@ -221,6 +221,10 @@ Judge judge = factory.createFromConfig(benchmark.juryConfig());
 4. Ensure `./mvnw clean test` passes
 5. Open a Pull Request
 
-## License
+## Licensing
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+This project originated from earlier Apache-licensed work in the Spring AI Community.
+
+Beginning with version 0.3.0, new development is licensed under the Business Source License 1.1 (BSL).
+
+Historical Apache-licensed portions remain available under their original terms. See [LICENSE](LICENSE) and [LICENSE-APACHE.txt](LICENSE-APACHE.txt) for details.

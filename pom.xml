@@ -3,37 +3,50 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springaicommunity</groupId>
-		<artifactId>spring-ai-community-parent</artifactId>
-		<version>1.0.1</version>
-		<relativePath/>
-	</parent>
-
+	<groupId>io.github.markpollack</groupId>
 	<artifactId>agent-bench-parent</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.3.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>agent-bench</name>
+	<name>Agent Bench</name>
 	<description>Benchmark for Java focused Agents to determine how well they solve a range of problems</description>
-	<url>https://github.com/spring-ai-community/agent-bench</url>
+	<url>https://github.com/markpollack/agent-bench</url>
 
 	<licenses>
 		<license>
-			<name>Apache License, Version 2.0</name>
-			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+			<name>Business Source License 1.1</name>
+			<url>https://github.com/markpollack/agent-bench/blob/main/LICENSE</url>
+			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<scm>
-		<url>https://github.com/spring-ai-community/agent-bench</url>
-		<connection>scm:git:git://github.com/spring-ai-community/agent-bench.git</connection>
-		<developerConnection>scm:git:git@github.com:spring-ai-community/agent-bench.git</developerConnection>
+		<connection>scm:git:git://github.com/markpollack/agent-bench.git</connection>
+		<developerConnection>scm:git:ssh://github.com:markpollack/agent-bench.git</developerConnection>
+		<url>https://github.com/markpollack/agent-bench</url>
 	</scm>
+
+	<developers>
+		<developer>
+			<id>markpollack</id>
+			<name>Mark Pollack</name>
+			<email>mark.pollack@gmail.com</email>
+		</developer>
+	</developers>
+
 	<properties>
+		<java.version>21</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.boot.version>3.3.0</spring.boot.version>
 		<jackson.version>2.17.0</jackson.version>
-		<github.api.version>1.318</github.api.version>
+
+		<!-- Plugin versions -->
+		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+		<maven-javadoc-plugin.version>3.6.0</maven-javadoc-plugin.version>
+		<maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+		<central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -49,14 +62,17 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<!-- build plugins inherited from spring-ai-community-parent:
-	     maven-compiler-plugin, spring-javaformat-maven-plugin, etc. -->
-
-
 	<modules>
 		<module>agent-bench-core</module>
 		<module>agent-bench-agents</module>
 	</modules>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>central</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<repositories>
 		<repository>
@@ -71,5 +87,116 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>flatten-maven-plugin</artifactId>
+						<version>1.6.0</version>
+						<configuration>
+							<flattenMode>ossrh</flattenMode>
+						</configuration>
+						<executions>
+							<execution>
+								<id>flatten</id>
+								<phase>process-resources</phase>
+								<goals><goal>flatten</goal></goals>
+							</execution>
+							<execution>
+								<id>flatten.clean</id>
+								<phase>clean</phase>
+								<goals><goal>clean</goal></goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>${central-publishing-maven-plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<publishingServerId>central</publishingServerId>
+							<autoPublish>true</autoPublish>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven-gpg-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals><goal>sign</goal></goals>
+								<configuration>
+									<gpgArguments>
+										<arg>--pinentry-mode</arg>
+										<arg>loopback</arg>
+									</gpgArguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>${maven-source-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals><goal>jar-no-fork</goal></goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>${maven-javadoc-plugin.version}</version>
+						<configuration>
+							<failOnError>false</failOnError>
+							<quiet>true</quiet>
+						</configuration>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals><goal>jar</goal></goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.14.0</version>
+					<configuration>
+						<release>${java.version}</release>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.5.2</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
