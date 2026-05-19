@@ -11,6 +11,9 @@
   <artifactId>agent-bench-core</artifactId>
   <packaging>jar</packaging>
 
+  <name>Agent Bench Core</name>
+  <description>Core benchmarking framework for evaluating Java-focused AI agents</description>
+
   <dependencies>
     <!-- Spring Framework -->
     <dependency>
