@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.github.markpollack</groupId>
+  <artifactId>agent-bench-agents</artifactId>
+  <version>0.3.0</version>
+  <name>Agent Bench - Agent Integrations</name>
+  <description>Full CLI entry point (BenchApp) and LLM judge (TestQualityJudge) for Agent Bench</description>
+  <url>https://github.com/markpollack/agent-bench/agent-bench-agents</url>
+  <licenses>
+    <license>
+      <name>Business Source License 1.1</name>
+      <url>https://github.com/markpollack/agent-bench/blob/main/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>markpollack</id>
+      <name>Mark Pollack</name>
+      <email>mark.pollack@gmail.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git://github.com/markpollack/agent-bench.git/agent-bench-agents</connection>
+    <developerConnection>scm:git:ssh://github.com:markpollack/agent-bench.git/agent-bench-agents</developerConnection>
+    <url>https://github.com/markpollack/agent-bench/agent-bench-agents</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>io.github.markpollack</groupId>
+      <artifactId>agent-bench-core</artifactId>
+      <version>0.3.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.github.markpollack</groupId>
+      <artifactId>agent-client-core</artifactId>
+      <version>0.18.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.github.markpollack</groupId>
+      <artifactId>agent-claude</artifactId>
+      <version>0.18.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.github.markpollack</groupId>
+      <artifactId>agent-judge-core</artifactId>
+      <version>0.11.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.17.1</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>central-snapshots</id>
+      <name>Maven Central Snapshots</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    </repository>
+  </repositories>
+</project>

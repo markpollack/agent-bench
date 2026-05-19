@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.github.markpollack</groupId>
+  <artifactId>agent-bench-parent</artifactId>
+  <version>0.3.0</version>
+  <packaging>pom</packaging>
+  <name>Agent Bench</name>
+  <description>Benchmark for Java focused Agents to determine how well they solve a range of problems</description>
+  <url>https://github.com/markpollack/agent-bench</url>
+  <licenses>
+    <license>
+      <name>Business Source License 1.1</name>
+      <url>https://github.com/markpollack/agent-bench/blob/main/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>markpollack</id>
+      <name>Mark Pollack</name>
+      <email>mark.pollack@gmail.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git://github.com/markpollack/agent-bench.git</connection>
+    <developerConnection>scm:git:ssh://github.com:markpollack/agent-bench.git</developerConnection>
+    <url>https://github.com/markpollack/agent-bench</url>
+  </scm>
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>central-snapshots</id>
+      <name>Maven Central Snapshots</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    </repository>
+  </repositories>
+</project>
