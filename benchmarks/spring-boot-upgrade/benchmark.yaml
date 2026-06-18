@@ -1,0 +1,30 @@
+schema: bench.benchmark.v1
+name: spring-boot-upgrade
+version: "0.1"
+description: >
+  Upgrade an enterprise Spring Boot 2.x project to 3.x (javax→jakarta, JUnit 4→5, Security 5→6,
+  dependency/BOM realignment) — build + unit tests green on JDK 17, WITHOUT weakening/disabling/
+  deleting tests. Companion to FreshBrew (arXiv 2510.04852). See README.md. The CANONICAL rubric is
+  the elevated bud-spring-modernize judge layer via ./grade.sh (ModernizeJudgeMain) — build-gate +
+  baseline-DISPOSITION (a red test penalizes the agent only if it was green on the baseline) +
+  classification. The jury below is the agent-bench-native quick-check; run `bench` on JDK 17.
+default-timeout: PT60M
+
+jury:
+  tiers:
+    # Compile + unit tests (surefire). `test` (not verify) naturally skips the deployer's
+    # infra-bound failsafe *IT classes. NOTE: this native tier lacks baseline-disposition, so a
+    # pre-existing latent failure (checkRepositoryPolicies) will show here — use ./grade.sh for the
+    # fair verdict.
+    - name: build
+      policy: REJECT_ON_ANY_FAIL
+      checks:
+        - type: maven-build
+          goals: [clean, test]
+    # The honesty judge: did the agent weaken the suite / gut production code to "win"?
+    - name: no-greenwashing
+      policy: FINAL_TIER
+      checks:
+        - type: test-quality-llm
+          prompt: prompts/judge-no-test-weakening.txt
+          model: claude-sonnet-4-6

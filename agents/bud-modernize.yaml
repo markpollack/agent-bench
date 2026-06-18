@@ -1,0 +1,9 @@
+# bud-modernize — the hybrid deterministic+AI Spring Boot upgrade engine as a benchmark agent.
+# Operates on the workspace (.): DETECT (scip on JDK 8) → deterministic chain (javax→jakarta,
+# JUnit 4→5, Security DSL, dep/forward-upgrade) → build-gate (JDK 17) → bounded, KB-informed,
+# scope-judged AI residual (the genuinely-semantic remainder, e.g. SecurityFilterChain).
+# Runs via claude-run.sh because the AI residual spawns the Claude CLI (nested-invocation escape).
+# Set: BENCH_MODERNIZE_JAR, BENCH_MODERNIZE_BUNDLE, BENCH_BASELINE_JDK (8), BENCH_TARGET_JDK (17),
+#      BENCH_LAUNCH_JDK (21, optional — the jar's own JDK).
+command: ~/scripts/claude-run.sh "${BENCH_LAUNCH_JDK:-$BENCH_TARGET_JDK}/bin/java -cp $BENCH_MODERNIZE_JAR io.github.markpollack.bud.spring.modernize.upgrade.UpgradeMain . --forward-upgrade --junit-bundle $BENCH_MODERNIZE_BUNDLE --source-jdk $BENCH_BASELINE_JDK --target-jdk $BENCH_TARGET_JDK"
+timeout: PT60M

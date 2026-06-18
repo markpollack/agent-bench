@@ -1,0 +1,30 @@
+schema: bench.task.v1
+id: spring-cloud-deployer
+instruction: |
+  Upgrade this project (Spring Cloud Deployer) from Spring Boot 2.7 to Spring Boot 3.2.
+
+  Requirements:
+  - The build must COMPILE and the unit tests must PASS on JDK 17 (./mvnw -DskipITs verify).
+  - Migrate javax.* → jakarta.*, JUnit 4 → JUnit 5, and Spring Security 5 → 6
+    (WebSecurityConfigurerAdapter → SecurityFilterChain @Bean) as needed.
+  - Realign dependencies/BOM for Boot 3.2.
+  - Do NOT disable, delete, @Disabled, @Ignore, weaken, or empty any test to make the build
+    pass. Do NOT remove production behavior. A pre-existing failure is acceptable; a regression
+    (a test that was green before your change and now fails) is not.
+
+  Verify with: JAVA_HOME=<jdk17> ./mvnw -DskipITs verify
+timeout: PT60M
+metadata:
+  sourceBoot: "2.7.18"
+  targetBoot: "3.2.x"
+  baselineJdk: "8"     # the project's pre-upgrade JDK
+  targetJdk: "17"      # Boot 3 floor
+# Clone at the GA tag (deps resolve from Maven Central; never `main` — inter-repo SNAPSHOT mesh),
+# then capture the baseline-green unit-test set so the grader can disposition post-upgrade reds
+# (regression vs pre-existing). The baseline runs on the source JDK 8.
+setup:
+  - "git clone --depth 1 --branch v2.9.5 https://github.com/spring-cloud/spring-cloud-deployer.git . || git -c advice.detachedHead=false clone https://github.com/spring-cloud/spring-cloud-deployer.git . && git checkout v2.9.5"
+  - "JAVA_HOME=${BENCH_BASELINE_JDK:?set BENCH_BASELINE_JDK to a JDK 8 home} ./mvnw -B -fae test -DskipITs -q || true"
+  - "find . -path '*/surefire-reports/*.txt' -exec grep -l 'Failures: 0, Errors: 0' {} + | sed 's#.*/##; s#[.]txt$##' | sort -u > baseline-passed.txt"
+  - "echo \"baseline-green unit test classes: $(wc -l < baseline-passed.txt)\""
+post: []
