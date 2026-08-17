@@ -52,6 +52,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <!-- Export the Jackson 3 security floor used by the Agent Client closure. -->
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
