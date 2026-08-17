@@ -41,6 +41,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.boot.version>4.0.7</spring.boot.version>
 		<jackson.version>2.21.6</jackson.version>
+		<jackson3.version>3.1.6</jackson3.version>
 		<agent-judge.version>0.14.0</agent-judge.version>
 		<agent-client.version>0.26.0</agent-client.version>
 		<dependency-check.failBuildOnCVSS>7.0</dependency-check.failBuildOnCVSS>
@@ -60,6 +61,14 @@
 				<groupId>com.fasterxml.jackson</groupId>
 				<artifactId>jackson-bom</artifactId>
 				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<!-- Jackson 3 BOM -->
+			<dependency>
+				<groupId>tools.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson3.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
