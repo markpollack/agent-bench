@@ -9,24 +9,38 @@ Benchmarking framework for AI coding agents on enterprise Java tasks. Defines be
 ```bash
 git clone https://github.com/markpollack/agent-bench.git
 cd agent-bench
-./mvnw clean install -DskipTests
+./mvnw clean verify
 ```
 
 List available benchmarks:
 
-```
-$ bench list
+```bash
+./mvnw -q -pl agent-bench-core exec:java -Dexec.args="list"
 
 Available benchmarks:
 
   code-coverage                  v1.0      (1 tasks)
   hello-world                    v1.0      (1 tasks)
+  spring-boot-upgrade            v0.1      (1 tasks)
 ```
 
 Run a benchmark with an agent:
 
 ```bash
-bench run --benchmark hello-world --agent agents/claude-code.yaml
+./mvnw -q -pl agent-bench-core exec:java \
+  -Dexec.args="run --benchmark hello-world --agent agents/claude-code.yaml"
+```
+
+The repository publishes `io.github.markpollack:agent-bench-core` and
+`io.github.markpollack:agent-bench-agents`. Use the agents module when an LLM-backed judge is
+required:
+
+```xml
+<dependency>
+  <groupId>io.github.markpollack</groupId>
+  <artifactId>agent-bench-core</artifactId>
+  <version>0.5.0</version>
+</dependency>
 ```
 
 ## How It Works
@@ -126,14 +140,20 @@ The filesystem is the contract. The bench writes `INSTRUCTION.md` to the workspa
 
 ```bash
 # Set up workspace
-bench provide --benchmark code-coverage --task spring-petclinic --workspace /tmp/petclinic
+./mvnw -q -pl agent-bench-core exec:java \
+  -Dexec.args="provide --benchmark code-coverage --task spring-petclinic --workspace /tmp/petclinic"
 
 # Run your agent (any tool that reads INSTRUCTION.md)
 cd /tmp/petclinic && your-agent "$(cat INSTRUCTION.md)"
 
 # Grade the result
-bench grade --benchmark code-coverage --task spring-petclinic --workspace /tmp/petclinic
+./mvnw -q -pl agent-bench-core exec:java \
+  -Dexec.args="grade --benchmark code-coverage --task spring-petclinic --workspace /tmp/petclinic"
 ```
+
+Benchmark YAML and agent configuration are trusted-code inputs: setup, post-processing, and agent
+commands execute through `bash -c`. Use a disposable host or the Docker sandbox when evaluating
+untrusted workloads.
 
 ## CLI Reference
 
@@ -207,6 +227,7 @@ Judge judge = factory.createFromConfig(benchmark.juryConfig());
 |-----------|-------|--------|
 | `hello-world` | 1 | Working — validates file creation |
 | `code-coverage` | 1 (spring-petclinic) | Judges validated, end-to-end run pending |
+| `spring-boot-upgrade` | 1 (spring-cloud-deployer) | Candidate — native build quick-check; baseline-aware grader is an owner-operated external integration |
 
 ## Related Projects
 
@@ -221,10 +242,12 @@ Judge judge = factory.createFromConfig(benchmark.juryConfig());
 4. Ensure `./mvnw clean test` passes
 5. Open a Pull Request
 
-## Licensing
+## License
 
 This project originated from earlier Apache-licensed work in the Spring AI Community.
 
 Beginning with version 0.3.0, new development is licensed under the Business Source License 1.1 (BSL).
 
-Historical Apache-licensed portions remain available under their original terms. See [LICENSE](LICENSE) and [LICENSE-APACHE.txt](LICENSE-APACHE.txt) for details.
+Historical Apache-licensed portions remain available under their original terms. See the
+[Business Source License 1.1](LICENSE) and [historical Apache License 2.0](LICENSE-APACHE.txt) for
+details.

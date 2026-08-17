@@ -24,8 +24,6 @@ import io.github.markpollack.judge.Judge;
 import io.github.markpollack.judge.context.JudgmentContext;
 import io.github.markpollack.judge.result.Check;
 import io.github.markpollack.judge.result.Judgment;
-import io.github.markpollack.judge.result.JudgmentStatus;
-import io.github.markpollack.judge.score.NumericalScore;
 
 /**
  * LLM-based judge that evaluates practice adherence of a test suite against a rubric
@@ -65,8 +63,8 @@ public class TestQualityJudge implements Judge {
 		if (!hasTestFiles(workspace)) {
 			logger.info("No test files found in {}", workspace);
 			return Judgment.builder()
-				.score(NumericalScore.normalized(0.0))
-				.status(JudgmentStatus.FAIL)
+				.fail()
+				.score(0.0)
 				.reasoning("No test classes found in src/test/")
 				.build();
 		}
@@ -77,7 +75,7 @@ public class TestQualityJudge implements Judge {
 		}
 		catch (IOException ex) {
 			logger.error("Failed to read judge prompt: {}", judgePromptPath, ex);
-			return Judgment.error("Failed to read judge prompt: " + ex.getMessage(), ex);
+			return Judgment.error("Failed to read judge prompt: " + ex.getMessage());
 		}
 
 		String agentOutput;
@@ -88,7 +86,7 @@ public class TestQualityJudge implements Judge {
 		}
 		catch (Exception ex) {
 			logger.error("Judge agent execution failed", ex);
-			return Judgment.error("Judge agent execution failed: " + ex.getMessage(), ex);
+			return Judgment.error("Judge agent execution failed: " + ex.getMessage());
 		}
 
 		return parseJudgment(agentOutput);
@@ -97,7 +95,7 @@ public class TestQualityJudge implements Judge {
 	Judgment parseJudgment(String agentOutput) {
 		Matcher matcher = JSON_BLOCK.matcher(agentOutput);
 		if (!matcher.find()) {
-			return Judgment.error("No JSON found in judge output", null);
+			return Judgment.error("No JSON found in judge output");
 		}
 
 		String json = matcher.group();
@@ -105,7 +103,7 @@ public class TestQualityJudge implements Judge {
 			JsonNode root = MAPPER.readTree(json);
 			JsonNode criteriaNode = root.get("criteria");
 			if (criteriaNode == null || !criteriaNode.isArray()) {
-				return Judgment.error("Judge output missing 'criteria' array", null);
+				return Judgment.error("Judge output missing 'criteria' array");
 			}
 
 			List<Check> checks = new ArrayList<>();
@@ -123,16 +121,15 @@ public class TestQualityJudge implements Judge {
 			}
 
 			if (count == 0) {
-				return Judgment.error("Judge output has empty criteria array", null);
+				return Judgment.error("Judge output has empty criteria array");
 			}
 
 			double averageScore = scoreSum / count;
-			JudgmentStatus status = averageScore >= passThreshold ? JudgmentStatus.PASS : JudgmentStatus.FAIL;
 			String bootVersion = root.has("boot_version") ? root.get("boot_version").asText() : "unknown";
 
-			return Judgment.builder()
-				.score(NumericalScore.normalized(averageScore))
-				.status(status)
+			Judgment.FindingBuilder builder = averageScore >= passThreshold ? Judgment.builder().pass()
+					: Judgment.builder().fail();
+			return builder.score(averageScore)
 				.reasoning(String.format("Practice adherence: %.2f avg across %d criteria (Boot %s)", averageScore,
 						count, bootVersion))
 				.checks(checks)
@@ -142,7 +139,7 @@ public class TestQualityJudge implements Judge {
 				.build();
 		}
 		catch (Exception ex) {
-			return Judgment.error("Failed to parse judge JSON: " + ex.getMessage(), ex);
+			return Judgment.error("Failed to parse judge JSON: " + ex.getMessage());
 		}
 	}
 

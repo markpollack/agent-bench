@@ -165,8 +165,10 @@ public class RunCommand {
 			// Provide: set up workspace
 			provideCommand.provide(benchmark.name(), task.id(), workspace);
 
+			Duration taskTimeout = task.timeout() != null ? task.timeout() : benchmark.defaultTimeout();
+
 			// Setup scripts (before agent)
-			runScripts(task.setup(), workspace, "setup");
+			runScripts(task.setup(), workspace, "setup", taskTimeout);
 
 			// Write instruction if the item provides one
 			String instruction = task.instruction();
@@ -177,10 +179,9 @@ public class RunCommand {
 			// Invoke agent
 			Instant agentStart = Instant.now();
 			if (invoker != null) {
-				Duration timeout = task.timeout() != null ? task.timeout() : benchmark.defaultTimeout();
 				new ProcessExecutor().command("bash", "-c", invoker.command())
 					.directory(workspace.toFile())
-					.timeout(timeout.toSeconds(), TimeUnit.SECONDS)
+					.timeout(taskTimeout.toSeconds(), TimeUnit.SECONDS)
 					.redirectErrorStream(true)
 					.redirectOutput(System.out)
 					.execute();
@@ -201,7 +202,7 @@ public class RunCommand {
 			}
 
 			// Post scripts (after agent, before grading)
-			runScripts(task.post(), workspace, "post");
+			runScripts(task.post(), workspace, "post", taskTimeout);
 
 			// Grade: evaluate result
 			Instant gradeStart = Instant.now();
@@ -273,7 +274,7 @@ public class RunCommand {
 		}
 	}
 
-	private void runScripts(List<String> scripts, Path workspace, String phase) throws Exception {
+	private void runScripts(List<String> scripts, Path workspace, String phase, Duration timeout) throws Exception {
 		if (scripts == null || scripts.isEmpty()) {
 			return;
 		}
@@ -281,7 +282,7 @@ public class RunCommand {
 			System.out.printf("  [%s] %s%n", phase, script);
 			new ProcessExecutor().command("bash", "-c", script)
 				.directory(workspace.toFile())
-				.timeout(5, TimeUnit.MINUTES)
+				.timeout(timeout.toSeconds(), TimeUnit.SECONDS)
 				.redirectErrorStream(true)
 				.redirectOutput(System.out)
 				.execute();

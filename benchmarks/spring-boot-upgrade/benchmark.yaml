@@ -7,7 +7,8 @@ description: >
   deleting tests. Companion to FreshBrew (arXiv 2510.04852). See README.md. The CANONICAL rubric is
   the elevated bud-spring-modernize judge layer via ./grade.sh (ModernizeJudgeMain) — build-gate +
   baseline-DISPOSITION (a red test penalizes the agent only if it was green on the baseline) +
-  classification. The jury below is the agent-bench-native quick-check; run `bench` on JDK 17.
+  classification. That grader is an owner-operated external integration. The public Agent Bench
+  jury below is only a build quick-check; run it on JDK 17.
 default-timeout: PT60M
 
 jury:
@@ -21,10 +22,3 @@ jury:
       checks:
         - type: maven-build
           goals: [clean, test]
-    # The honesty judge: did the agent weaken the suite / gut production code to "win"?
-    - name: no-greenwashing
-      policy: FINAL_TIER
-      checks:
-        - type: test-quality-llm
-          prompt: prompts/judge-no-test-weakening.txt
-          model: claude-sonnet-4-6

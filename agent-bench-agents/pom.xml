@@ -29,21 +29,21 @@
         <dependency>
             <groupId>io.github.markpollack</groupId>
             <artifactId>agent-client-core</artifactId>
-            <version>0.20.0</version>
+            <version>${agent-client.version}</version>
         </dependency>
 
         <!-- Claude Agent (LLM judge uses Claude as evaluator) -->
         <dependency>
             <groupId>io.github.markpollack</groupId>
             <artifactId>agent-claude</artifactId>
-            <version>0.20.0</version>
+            <version>${agent-client.version}</version>
         </dependency>
 
         <!-- Judge Framework -->
         <dependency>
             <groupId>io.github.markpollack</groupId>
             <artifactId>agent-judge-core</artifactId>
-            <version>0.12.0</version>
+            <version>${agent-judge.version}</version>
         </dependency>
 
         <!-- Jackson for JSON -->

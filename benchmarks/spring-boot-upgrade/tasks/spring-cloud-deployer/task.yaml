@@ -23,7 +23,7 @@ metadata:
 # then capture the baseline-green unit-test set so the grader can disposition post-upgrade reds
 # (regression vs pre-existing). The baseline runs on the source JDK 8.
 setup:
-  - "git clone --depth 1 --branch v2.9.5 https://github.com/spring-cloud/spring-cloud-deployer.git . || git -c advice.detachedHead=false clone https://github.com/spring-cloud/spring-cloud-deployer.git . && git checkout v2.9.5"
+  - "git init && git remote add origin https://github.com/spring-cloud/spring-cloud-deployer.git && git fetch --depth 1 origin tag v2.9.5 && git -c advice.detachedHead=false checkout FETCH_HEAD"
   - "JAVA_HOME=${BENCH_BASELINE_JDK:?set BENCH_BASELINE_JDK to a JDK 8 home} ./mvnw -B -fae test -DskipITs -q || true"
   - "find . -path '*/surefire-reports/*.txt' -exec grep -l 'Failures: 0, Errors: 0' {} + | sed 's#.*/##; s#[.]txt$##' | sort -u > baseline-passed.txt"
   - "echo \"baseline-green unit test classes: $(wc -l < baseline-passed.txt)\""

@@ -7,6 +7,12 @@ Companion to **FreshBrew** (arXiv 2510.04852): the deterministic-only ceiling si
 best AI, and the anti-reward-hacking gate is what makes the score meaningful. Here the gate is our
 own judge layer.
 
+> **Maturity:** candidate, owner-operated integration. The benchmark/task definition is public,
+> but the baseline-aware `ModernizeJudgeMain` grader and `bud-modernize` agent are supplied by a
+> separate private companion project. They cannot be reproduced from this repository alone. Agent
+> Bench 0.5.0 exposes only the native build quick-check; direct `bench grade` integration for the
+> baseline-aware rubric remains intentionally deferred.
+
 ## The rubric *is* the judges (elevated to a CLI)
 
 Grading is **not** a naive "build green" — that's unfair on real projects. It's the
@@ -25,7 +31,7 @@ Grading is **not** a naive "build green" — that's unfair on real projects. It'
 
 `PASS` ⟺ the upgrade compiles **and** introduces no regression.
 
-## Run it (terminal-bench flow)
+## Run it (owner-operated terminal flow)
 
 ```bash
 export BENCH_MODERNIZE_JAR=~/projects/bud-spring-modernize/target/bud-spring-modernize-0.1.0-SNAPSHOT-cli.jar
@@ -34,15 +40,33 @@ export BENCH_BASELINE_JDK=~/.sdkman/candidates/java/8.0.472-amzn      # JDK 8 (b
 export BENCH_TARGET_JDK=~/.sdkman/candidates/java/17.0.17-librca      # JDK 17 (Boot 3 floor)
 export BENCH_LAUNCH_JDK=~/.sdkman/candidates/java/21.0.9-amzn         # the jar's own JDK
 
-# 1) provide + setup (clone v2.9.5, capture baseline-green unit tests)
-bench provide --benchmark spring-boot-upgrade --task spring-cloud-deployer --workspace /tmp/scd
+# 1) clone the pinned fixture and capture its JDK 8 baseline
+git clone --depth 1 --branch v2.9.5 \
+  https://github.com/spring-cloud/spring-cloud-deployer.git /tmp/scd
+( cd /tmp/scd && \
+  JAVA_HOME="$BENCH_BASELINE_JDK" ./mvnw -B -fae test -DskipITs -q || true )
+find /tmp/scd -path '*/surefire-reports/*.txt' \
+  -exec grep -l 'Failures: 0, Errors: 0' {} + \
+  | sed 's#.*/##; s#[.]txt$##' | sort -u > /tmp/scd/baseline-passed.txt
 
-# 2) run an agent in the workspace (any of):
-( cd /tmp/scd && eval "$(grep '^command:' ../../agents/claude-code.yaml | cut -d' ' -f2-)" )   # vanilla
+# 2) add Agent Bench's instruction/context files to the existing fixture
+./mvnw -q -pl agent-bench-core exec:java \
+  -Dexec.args="provide --benchmark spring-boot-upgrade --task spring-cloud-deployer --workspace /tmp/scd"
+
+# 3) run an agent in the workspace (any of):
+( cd /tmp/scd && claude --print --dangerously-skip-permissions \
+  'Read INSTRUCTION.md and follow the instructions precisely.' )   # vanilla
 # or the hybrid engine:  agents/bud-modernize.yaml
 
-# 3) grade with the elevated judges
+# 4) grade with the external baseline-aware judges
 benchmarks/spring-boot-upgrade/grade.sh /tmp/scd
+```
+
+For the public build-only quick-check after preparing a workspace:
+
+```bash
+./mvnw -q -pl agent-bench-core exec:java \
+  -Dexec.args="grade --benchmark spring-boot-upgrade --task spring-cloud-deployer --workspace /tmp/scd"
 ```
 
 ## Agents to compare
@@ -61,3 +85,6 @@ benchmarks/spring-boot-upgrade/grade.sh /tmp/scd
 register `ModernizeJudgeMain` as an agent-bench **exec-judge** (`JudgeFactory.register("modernize-rubric", …)`
 in `agent-bench-agents`) so the `benchmark.yaml` jury delegates to it — both build on the same
 `agent-judge` library, so the judges drop in without an adapter.
+
+The prompt under `prompts/` records the intended qualitative anti-greenwashing review, but it is not
+wired into the 0.5.0 native jury.
