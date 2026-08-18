@@ -155,7 +155,9 @@ Reports include comprehensive provenance metadata:
 ### Security
 
 - No secrets leaked in logs (only presence/absence reported)
-- Sandbox isolation via workspace directories
+- Workspace directories organize benchmark files but are not a security boundary
+- Agent, setup, and post-processing commands run as local host processes with the invoking user's permissions
+- Use an externally managed disposable VM or CI runner for untrusted definitions or agents
 - Permission-bypassing only in test profiles
 
 ## Development

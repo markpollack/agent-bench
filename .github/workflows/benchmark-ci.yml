@@ -24,5 +24,8 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Verify reactor
-        run: ./mvnw -B clean verify
+      - name: Verify and install reactor
+        run: ./mvnw -B clean install
+
+      - name: Verify standalone runtime closures
+        run: scripts/verify-standalone-runtime-closures.sh
