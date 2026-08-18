@@ -6,11 +6,10 @@ Agent Bench is a Java framework for defining, running, and grading repeatable AI
 
 ## Maven
 
-The current development line is 0.6.0-SNAPSHOT. The latest public release remains 0.5.0 and
-publishes these modules:
+The latest public release is 0.6.0 and publishes these modules:
 
-- `io.github.markpollack:agent-bench-core:0.5.0`
-- `io.github.markpollack:agent-bench-agents:0.5.0`
+- `io.github.markpollack:agent-bench-core:0.6.0`
+- `io.github.markpollack:agent-bench-agents:0.6.0`
 
 Use the agents module when an LLM-backed judge is required:
 
@@ -18,7 +17,7 @@ Use the agents module when an LLM-backed judge is required:
 <dependency>
   <groupId>io.github.markpollack</groupId>
   <artifactId>agent-bench-agents</artifactId>
-  <version>0.5.0</version>
+  <version>0.6.0</version>
 </dependency>
 ```
 
@@ -38,6 +37,7 @@ untrusted benchmark definitions or agents.
 
 ## License
 
-Current development is licensed under the [Business Source License 1.1](LICENSE). Releases before
-0.3.0 remain under their historical Apache License 2.0 terms; see
+Current source and the 0.6.0 release are licensed under the
+[Business Source License 1.1](LICENSE). Releases before 0.3.0 remain under their historical Apache
+License 2.0 terms; see
 [LICENSE-APACHE.txt](LICENSE-APACHE.txt).
