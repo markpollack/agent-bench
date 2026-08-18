@@ -1,8 +1,8 @@
-## Agent Bench 0.5.0
+## Agent Bench 0.5.1
 
-- Adds an owner-operated Spring Boot 2.7-to-3.2 upgrade benchmark based on the pinned Spring Cloud Deployer 2.9.5 release, with baseline-aware external grading.
-- Aligns the published modules with Agent Judge 0.14.0 and Agent Client 0.26.0.
-- Repairs the benchmark workspace setup contract and lets setup/post phases use the task timeout.
-- Adds root-only CycloneDX 1.6 SBOM publication and restores a working clean-verification CI gate.
+Agent Bench 0.5.1 is a maintenance release that exports the Jackson 3.1.6 floor to ordinary
+standalone consumers. This clears CVE-2026-59889 from the shipped compile/runtime dependency graph.
 
-The Spring Boot upgrade benchmark's baseline-aware `ModernizeJudgeMain` grader remains an external integration; the native Agent Bench jury is a build-only quick check in this release.
+There is no Agent Bench public API, benchmark schema, or benchmark-behavior change in this patch.
+The release retains the 0.5 line's Spring upgrade benchmark and its explicit limitation: the
+baseline-aware external grader remains an owner-operated integration outside the public repository.
