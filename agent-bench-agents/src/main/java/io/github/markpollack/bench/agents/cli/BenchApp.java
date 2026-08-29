@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import io.github.markpollack.bench.agents.judge.AnswerKeyRecallJudge;
 import io.github.markpollack.bench.agents.judge.TestQualityJudge;
 import io.github.markpollack.bench.core.benchmark.JudgeFactory;
 import io.github.markpollack.bench.core.cli.BenchMain;
@@ -58,6 +59,22 @@ public class BenchApp {
 
 			Path resolvedPrompt = Path.of(promptPath);
 			return new TestQualityJudge(TestQualityJudge.defaultAgentClientFactory(model, timeout), resolvedPrompt);
+		});
+		// Reference-based recall against an answer key the BENCHMARK ships. The judge is
+		// domain-agnostic — every domain term lives in the answer-key file, so no benchmark's
+		// vocabulary enters the engine.
+		factory.register("answer-key-recall", config -> {
+			String key = (String) config.get("answerKey");
+			if (key == null) {
+				throw new IllegalArgumentException("answer-key-recall requires 'answerKey'");
+			}
+			String report = (String) config.getOrDefault("report", "report.md");
+			String model = (String) config.getOrDefault("model", "claude-sonnet-4-6");
+			int votes = ((Number) config.getOrDefault("votes", 3)).intValue();
+			int min = ((Number) config.getOrDefault("min", 0)).intValue();
+			Duration timeout = Duration.ofMinutes(10);
+			return new AnswerKeyRecallJudge(AnswerKeyRecallJudge.defaultAgentClientFactory(model, timeout),
+					Path.of(key), report, votes, min);
 		});
 		return factory;
 	}
