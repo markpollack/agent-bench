@@ -103,4 +103,18 @@ class AnswerKeyRecallJudgeTest {
 		assertThat(j.reasoning()).contains("unmeasurable");
 	}
 
+	@Test
+	void loadsARealShippedAnswerKeyNotJustSyntheticOnes() throws Exception {
+		// The bud-ddd gold register, verbatim. A schema that only parses fixtures I wrote is
+		// not evidence that a benchmark's answer key will load.
+		Path key = Path.of(getClass().getResource("/real-gold-register.yaml").toURI());
+		List<Entry> entries = AnswerKeyRecallJudge.loadAnswerKey(key);
+
+		assertThat(entries).hasSize(5);
+		assertThat(entries).extracting(Entry::id).containsExactly("G1", "G2", "G3", "G4", "G5");
+		assertThat(entries).allSatisfy(e -> assertThat(e.name()).isNotBlank());
+		assertThat(entries.get(0).expectedSeverity()).isEqualTo("critical");
+		assertThat(entries.get(0).adjudication()).contains("SURFACED");
+	}
+
 }

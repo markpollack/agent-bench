@@ -1,0 +1,75 @@
+# Gold register: spring-batch — the execution-validated critique set
+#
+# Provenance (precision matters here, 2026-06-06): these critiques were thought
+# through personally by Mark in the manual review/extraction work, and VALIDATED BY
+# EXECUTION — they drove tuvium-batch-core and then workflow-batch, which runs in
+# production. Eric Evans's role was a directional signal: he scanned the review,
+# read the first finding or two, and was impressed — NOT an item-by-item audit.
+# Expect Phase-C contributions from him to be coarse (impressions, occasional
+# specific notes), not detailed registers.
+# Sources: lineage doc §3.2 (extraction targets) + ddd-demo VISION critique register
+# + the 2026-02-10 review findings. Used for reference-based recall measurement on
+# gold-referenced items: did the review under evaluation recover these?
+#
+# matchAny: lowercase substrings — a report finding matches an entry if its title or
+# Problem/Location text contains ANY of them. Keep signatures loose enough for
+# wording variance, tight enough not to cross-match.
+
+register:
+  - id: G1
+    expectedSeverity: critical
+    adjudication: >
+      Must be SURFACED as its own finding whose title/problem statement asserts the
+      boundary violation. A buried sentence inside a finding about a different problem
+      (e.g. "the natural aggregate is scattered" inside a repository finding) is NOT a
+      match. [Adjudicated 2026-06-07]
+    name: Aggregate boundaries / cross-aggregate object references
+    essence: >
+      JobInstance/JobExecution/StepExecution form a bidirectionally-navigable object
+      graph — either one large-cluster aggregate or cross-aggregate object references
+      violating Vernon Rule 3.
+    matchAny: ["cross-aggregate", "large-cluster", "large cluster", "reference by identity",
+               "rule 3", "object reference", "aggregate boundar"]
+
+  - id: G2
+    expectedSeverity: critical
+    name: Anemic domain model / mutable accumulator
+    essence: >
+      JobExecution/StepExecution expose public setters with no invariant enforcement;
+      StepExecution is a fat mutable accumulator (14+ mutable fields).
+    matchAny: ["anemic", "setter", "mutable", "invariant enforcement", "accumulator"]
+
+  - id: G3
+    expectedSeverity: critical
+    adjudication: >
+      A finding (any severity, including a Suggestion) whose surfaced subject is
+      introducing/modeling domain events for lifecycle transitions IS a match — the
+      recommendation asserts their absence. Placement scoring handles the demotion.
+      [Adjudicated 2026-06-07]
+    name: No domain events / reflection-based listeners
+    essence: >
+      Lifecycle transitions (job started/failed/completed) are not first-class domain
+      events; listener discovery is reflection-based rather than event-driven.
+    matchAny: ["domain event", "no events", "lifecycle transition", "listener"]
+
+  - id: G4
+    expectedSeverity: warning
+    name: JobRepository interface bloat / repository-per-aggregate-root
+    essence: >
+      JobRepository serves multiple aggregates (~20 methods, UnsupportedOperation
+      defaults) — violates one-repository-per-aggregate-root and interface segregation.
+    matchAny: ["jobrepository", "one repository per", "repository-per", "interface bloat",
+               "one-repository-per-aggregate"]
+
+  - id: G5
+    expectedSeverity: warning
+    name: Context object proliferation
+    essence: >
+      Five overlapping context objects (ExecutionContext, ChunkContext, StepContext,
+      JobContext, RepeatContext) with unclear domain meaning — ExecutionContext as an
+      untyped key-value bag.
+    matchAny: ["executioncontext", "context object", "chunkcontext", "stepcontext",
+               "five context", "key-value", "untyped"]
+
+# Recall = matched entries / 5. Manual precedent: the KB-equipped ACP agent recovered
+# 4/5 cold (missed most of G5 — partial via W-5). Control baseline TBD from this slice.
