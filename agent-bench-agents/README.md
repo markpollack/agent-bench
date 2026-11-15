@@ -215,4 +215,5 @@ This module depends on:
 
 ## License
 
-Licensed under the Apache License, Version 2.0.
+Licensed under the Business Source License 1.1, as the repository root records. Releases
+before the migration remain available under the historical Apache License 2.0.
