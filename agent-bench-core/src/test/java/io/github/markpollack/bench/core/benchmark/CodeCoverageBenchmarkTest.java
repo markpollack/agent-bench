@@ -58,9 +58,9 @@ class CodeCoverageBenchmarkTest {
 		// that the first 3 tiers (built-in types) parse without error.
 		JudgeFactory factory = new JudgeFactory();
 		// Register a stub for test-quality-llm so the full cascade can be created
-		factory.register("test-quality-llm", config -> (ctx) -> null);
+		factory.register("test-quality-llm", (config, evidence) -> () -> null);
 
-		Judge judge = factory.createFromConfig(juryConfig);
+		Judge judge = factory.createFromConfig(juryConfig).apply(TrialEvidence.of(Path.of(".")));
 		assertThat(judge).isNotNull();
 	}
 

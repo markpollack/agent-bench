@@ -9,9 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import io.github.markpollack.bench.agents.judge.AnswerKeyRecallJudge.Entry;
-import io.github.markpollack.judge.context.JudgmentContext;
-import io.github.markpollack.judge.result.Judgment;
-import io.github.markpollack.judge.result.JudgmentStatus;
+import io.github.markpollack.judge.judgment.Judgment;
+import io.github.markpollack.judge.judgment.JudgmentStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -93,11 +92,9 @@ class AnswerKeyRecallJudgeTest {
 	void abstainsRatherThanScoringZeroWhenTheReportIsMissing() throws Exception {
 		Path key = workspace.resolve("k.yaml");
 		Files.writeString(key, "entries:\n  - id: A1\n    name: n\n");
-		JudgmentContext context = JudgmentContext.builder().workspace(workspace).build();
-
-		Judgment j = new AnswerKeyRecallJudge(ws -> {
+		Judgment j = new AnswerKeyRecallJudge(() -> workspace, ws -> {
 			throw new IllegalStateException("must not be invoked when there is no report");
-		}, key, "absent-report.md", 3, 1).judge(context);
+		}, key, "absent-report.md", 3, 1).judge();
 
 		assertThat(j.status()).isEqualTo(JudgmentStatus.ABSTAIN);
 		assertThat(j.reasoning()).contains("unmeasurable");

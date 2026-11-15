@@ -52,18 +52,19 @@ public class BenchApp {
 
 	static JudgeFactory createJudgeFactory() {
 		JudgeFactory factory = new JudgeFactory();
-		factory.register("test-quality-llm", config -> {
+		factory.register("test-quality-llm", (config, evidence) -> {
 			String promptPath = (String) config.get("prompt");
 			String model = (String) config.getOrDefault("model", "claude-sonnet-4-6");
 			Duration timeout = Duration.ofMinutes(10);
 
 			Path resolvedPrompt = Path.of(promptPath);
-			return new TestQualityJudge(TestQualityJudge.defaultAgentClientFactory(model, timeout), resolvedPrompt);
+			return new TestQualityJudge(evidence::workspace, TestQualityJudge.defaultAgentClientFactory(model, timeout),
+					resolvedPrompt);
 		});
 		// Reference-based recall against an answer key the BENCHMARK ships. The judge is
 		// domain-agnostic — every domain term lives in the answer-key file, so no benchmark's
 		// vocabulary enters the engine.
-		factory.register("answer-key-recall", config -> {
+		factory.register("answer-key-recall", (config, evidence) -> {
 			String key = (String) config.get("answerKey");
 			if (key == null) {
 				throw new IllegalArgumentException("answer-key-recall requires 'answerKey'");
@@ -73,8 +74,8 @@ public class BenchApp {
 			int votes = ((Number) config.getOrDefault("votes", 3)).intValue();
 			int min = ((Number) config.getOrDefault("min", 0)).intValue();
 			Duration timeout = Duration.ofMinutes(10);
-			return new AnswerKeyRecallJudge(AnswerKeyRecallJudge.defaultAgentClientFactory(model, timeout),
-					Path.of(key), report, votes, min);
+			return new AnswerKeyRecallJudge(evidence::workspace,
+					AnswerKeyRecallJudge.defaultAgentClientFactory(model, timeout), Path.of(key), report, votes, min);
 		});
 		return factory;
 	}

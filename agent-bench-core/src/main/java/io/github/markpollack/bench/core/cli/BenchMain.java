@@ -100,7 +100,7 @@ public class BenchMain {
 		// Register test-quality-llm as a pass-through until agent-bench-agents provides
 		// the real LLM judge. This keeps the cascade functional for T0-T2.
 		factory.register("test-quality-llm",
-				config -> ctx -> io.github.markpollack.judge.result.Judgment.abstain("LLM judge not configured"));
+				(config, evidence) -> () -> io.github.markpollack.judge.judgment.Judgment.abstain("LLM judge not configured"));
 
 		new RunCommand(Paths.get("benchmarks"), factory).run(benchmark, agent, task, 1, difficulty);
 	}
@@ -112,7 +112,7 @@ public class BenchMain {
 		}
 		JudgeFactory factory = new JudgeFactory();
 		factory.register("test-quality-llm",
-				config -> ctx -> io.github.markpollack.judge.result.Judgment.abstain("LLM judge not configured"));
+				(config, evidence) -> () -> io.github.markpollack.judge.judgment.Judgment.abstain("LLM judge not configured"));
 		new RunCommand(Paths.get("benchmarks"), factory).resume(runId);
 	}
 

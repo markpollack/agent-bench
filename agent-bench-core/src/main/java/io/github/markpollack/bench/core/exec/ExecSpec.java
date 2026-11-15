@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.lang.NonNull;
 
 public class ExecSpec {
 
@@ -24,8 +23,8 @@ public class ExecSpec {
 	private final McpConfig mcp;
 
 	@JsonCreator
-	private ExecSpec(@JsonProperty("command") @NonNull List<String> command,
-			@JsonProperty("env") @NonNull Map<String, String> env, @JsonProperty("timeout") Duration timeout,
+	private ExecSpec(@JsonProperty("command") List<String> command,
+			@JsonProperty("env") Map<String, String> env, @JsonProperty("timeout") Duration timeout,
 			@JsonProperty("mcp") McpConfig mcp) {
 		this.command = List.copyOf(command);
 		this.env = Map.copyOf(env);

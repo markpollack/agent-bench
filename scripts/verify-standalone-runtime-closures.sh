@@ -64,10 +64,16 @@ check_module() {
     return 1
   fi
 
-  check_jackson_floor "${list_file}" 'com\.fasterxml\.jackson\.(core|dataformat)' '2.21.6'
-  check_jackson_floor "${list_file}" 'tools\.jackson\.(core|dataformat)' '3.1.6'
+  check_jackson_floor "${list_file}" 'com\.fasterxml\.jackson\.(core|dataformat)' '2.22.3'
+  check_jackson_floor "${list_file}" 'tools\.jackson\.(core|dataformat)' '3.2.3'
   assert_present "${list_file}" 'io.github.markpollack:agent-judge-core'
   assert_present "${list_file}" 'io.github.markpollack:agent-judge-exec'
+  assert_present "${list_file}" 'io.github.markpollack:agent-judge-file'
+  if [[ "${module}" == "core" ]] && grep -Eq '^[[:space:]]*org\.springframework:' "${list_file}"; then
+    echo "Spring Framework found in the agent-bench-core runtime closure:" >&2
+    grep -E '^[[:space:]]*org\.springframework:' "${list_file}" >&2
+    return 1
+  fi
   if [[ "${module}" == "agents" ]]; then
     assert_present "${list_file}" 'io.github.markpollack:agent-client-core'
     assert_present "${list_file}" 'io.github.markpollack:agent-claude'

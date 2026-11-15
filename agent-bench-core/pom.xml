@@ -15,12 +15,6 @@
   <description>Core benchmarking framework for evaluating Java-focused AI agents</description>
 
   <dependencies>
-    <!-- Spring Framework -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-    </dependency>
-
     <!-- YAML -->
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -44,6 +38,11 @@
     <dependency>
       <groupId>io.github.markpollack</groupId>
       <artifactId>agent-judge-exec</artifactId>
+      <version>${agent-judge.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.markpollack</groupId>
+      <artifactId>agent-judge-file</artifactId>
       <version>${agent-judge.version}</version>
     </dependency>
     <!-- Process Execution -->

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,14 +26,13 @@ import io.github.markpollack.bench.core.benchmark.Benchmark;
 import io.github.markpollack.bench.core.benchmark.BenchmarkCatalog;
 import io.github.markpollack.bench.core.benchmark.BenchmarkTask;
 import io.github.markpollack.bench.core.benchmark.JudgeFactory;
+import io.github.markpollack.bench.core.benchmark.TrialEvidence;
 import io.github.markpollack.bench.core.result.BenchmarkResult;
 import io.github.markpollack.bench.core.result.FailureMode;
 import io.github.markpollack.bench.core.result.TrialResult;
 import io.github.markpollack.judge.Judge;
 import org.zeroturnaround.exec.ProcessExecutor;
-import io.github.markpollack.judge.context.ExecutionStatus;
-import io.github.markpollack.judge.context.JudgmentContext;
-import io.github.markpollack.judge.result.Judgment;
+import io.github.markpollack.judge.judgment.Judgment;
 
 /**
  * Handles the {@code run} CLI command. Orchestrates provide, agent invocation, and grade
@@ -109,7 +109,7 @@ public class RunCommand {
 		ExecAgentInvoker invoker = agentConfig != null ? ExecAgentInvoker.fromYaml(Paths.get(agentConfig)) : null;
 
 		// Build judge from benchmark config
-		Judge judge = judgeFactory.createFromConfig(benchmark.juryConfig());
+		Function<TrialEvidence, Judge> judge = judgeFactory.createFromConfig(benchmark.juryConfig());
 
 		Instant runStart = Instant.now();
 		List<TrialResult> results = new ArrayList<>();
@@ -157,7 +157,7 @@ public class RunCommand {
 		return benchmarkResult;
 	}
 
-	private TrialResult runTrial(Benchmark benchmark, BenchmarkTask task, Judge judge, ExecAgentInvoker invoker,
+	private TrialResult runTrial(Benchmark benchmark, BenchmarkTask task, Function<TrialEvidence, Judge> judges, ExecAgentInvoker invoker,
 			Path runDir, String runId, String trialName) {
 		Path workspace = runDir.resolve("tasks").resolve(trialName).resolve("workspace");
 
@@ -206,18 +206,8 @@ public class RunCommand {
 
 			// Grade: evaluate result
 			Instant gradeStart = Instant.now();
-			JudgmentContext.Builder contextBuilder = JudgmentContext.builder()
-				.workspace(workspace)
-				.goal(task.instruction())
-				.executionTime(agentDuration)
-				.startedAt(agentStart)
-				.status(ExecutionStatus.SUCCESS);
-			// Pass item metadata through to judges (e.g., baselineCoverage for coverage
-			// judges)
-			task.metadata().forEach(contextBuilder::metadata);
-			JudgmentContext context = contextBuilder.build();
-
-			Judgment judgment = judge.judge(context);
+			// Item metadata reaches the judges (e.g., baselineCoverage for coverage judges)
+			Judgment judgment = judges.apply(new TrialEvidence(workspace, task.instruction(), task.metadata())).judge();
 			boolean resolved = judgment.pass();
 			Instant gradeEnd = Instant.now();
 
@@ -317,7 +307,7 @@ public class RunCommand {
 		ExecAgentInvoker invoker = agentName != null && !"manual".equals(agentName) ? findInvokerForResume(agentName)
 				: null;
 
-		Judge judge = judgeFactory.createFromConfig(benchmark.juryConfig());
+		Function<TrialEvidence, Judge> judge = judgeFactory.createFromConfig(benchmark.juryConfig());
 
 		Instant runStart = Instant.now();
 		List<TrialResult> results = new ArrayList<>();

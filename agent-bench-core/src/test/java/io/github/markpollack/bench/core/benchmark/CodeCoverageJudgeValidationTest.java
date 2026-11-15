@@ -10,12 +10,12 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import io.github.markpollack.judge.context.JudgmentContext;
+import io.github.markpollack.judge.Judge;
+import io.github.markpollack.judge.coverage.CoverageComparison;
 import io.github.markpollack.judge.coverage.CoverageImprovementJudge;
 import io.github.markpollack.judge.coverage.CoveragePreservationJudge;
-import io.github.markpollack.judge.coverage.JaCoCoReportParser;
 import io.github.markpollack.judge.exec.BuildSuccessJudge;
-import io.github.markpollack.judge.result.Judgment;
+import io.github.markpollack.judge.judgment.Judgment;
 
 /**
  * Validates T0-T2 judges against a preserved workspace from the code-coverage-v2
@@ -39,11 +39,12 @@ class CodeCoverageJudgeValidationTest {
 		assumeTrue(Files.isDirectory(WORKSPACE), "Experiment workspace not found: " + WORKSPACE);
 
 		// Include jacoco:report so the XML report is available for T1/T2
-		BuildSuccessJudge judge = BuildSuccessJudge.maven("clean", "test", "jacoco:report",
-				"-Dspring-javaformat.skip=true", "-Dcheckstyle.skip=true");
-		JudgmentContext context = JudgmentContext.builder().workspace(WORKSPACE).build();
+		Judge judge = BuildSuccessJudge
+			.maven("clean", "test", "jacoco:report", "-Dspring-javaformat.skip=true", "-Dcheckstyle.skip=true")
+			.evidence(WORKSPACE)
+			.build();
 
-		Judgment judgment = judge.judge(context);
+		Judgment judgment = judge.judge();
 
 		assertThat(judgment.pass()).as("T0: build should succeed — agent-written tests compile and pass").isTrue();
 	}
@@ -54,16 +55,9 @@ class CodeCoverageJudgeValidationTest {
 		assumeTrue(Files.isDirectory(WORKSPACE), "Experiment workspace not found: " + WORKSPACE);
 
 		// Baseline: zero coverage (no tests before agent ran)
-		JaCoCoReportParser.CoverageMetrics baseline = new JaCoCoReportParser.CoverageMetrics(0.0, 0.0, 0.0, 0, 0, 0, 0,
-				0, 0, "No tests");
+		CoveragePreservationJudge judge = new CoveragePreservationJudge(() -> new CoverageComparison(WORKSPACE, 0.0));
 
-		CoveragePreservationJudge judge = new CoveragePreservationJudge();
-		JudgmentContext context = JudgmentContext.builder()
-			.workspace(WORKSPACE)
-			.metadata("baselineCoverage", baseline)
-			.build();
-
-		Judgment judgment = judge.judge(context);
+		Judgment judgment = judge.judge();
 
 		assertThat(judgment.pass()).as("T1: coverage preserved — " + judgment.reasoning()).isTrue();
 	}
@@ -73,16 +67,10 @@ class CodeCoverageJudgeValidationTest {
 	void t2_coverageImprovement() {
 		assumeTrue(Files.isDirectory(WORKSPACE), "Experiment workspace not found: " + WORKSPACE);
 
-		JaCoCoReportParser.CoverageMetrics baseline = new JaCoCoReportParser.CoverageMetrics(0.0, 0.0, 0.0, 0, 0, 0, 0,
-				0, 0, "No tests");
+		CoverageImprovementJudge judge = new CoverageImprovementJudge(() -> new CoverageComparison(WORKSPACE, 0.0),
+				50.0);
 
-		CoverageImprovementJudge judge = new CoverageImprovementJudge(50.0);
-		JudgmentContext context = JudgmentContext.builder()
-			.workspace(WORKSPACE)
-			.metadata("baselineCoverage", baseline)
-			.build();
-
-		Judgment judgment = judge.judge(context);
+		Judgment judgment = judge.judge();
 
 		assertThat(judgment.pass()).as("T2: coverage above 50%% — " + judgment.reasoning()).isTrue();
 	}

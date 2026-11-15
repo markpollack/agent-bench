@@ -40,10 +40,10 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.boot.version>4.1.1</spring.boot.version>
-		<jackson.version>2.22.2</jackson.version>
-		<jackson3.version>3.2.2</jackson3.version>
-		<agent-judge.version>0.17.0</agent-judge.version>
-		<agent-client.version>0.30.0</agent-client.version>
+		<jackson.version>2.22.3</jackson.version>
+		<jackson3.version>3.2.3</jackson3.version>
+		<agent-judge.version>0.19.0-SNAPSHOT</agent-judge.version>
+		<agent-client.version>0.32.1-SNAPSHOT</agent-client.version>
 		<dependency-check.failBuildOnCVSS>7.0</dependency-check.failBuildOnCVSS>
 
 		<!-- Plugin versions -->

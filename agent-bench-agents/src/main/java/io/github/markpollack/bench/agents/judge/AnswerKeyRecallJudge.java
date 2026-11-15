@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,9 +23,8 @@ import org.slf4j.LoggerFactory;
 import io.github.markpollack.agents.client.AgentClient;
 import io.github.markpollack.agents.client.AgentClientResponse;
 import io.github.markpollack.judge.Judge;
-import io.github.markpollack.judge.context.JudgmentContext;
-import io.github.markpollack.judge.result.Check;
-import io.github.markpollack.judge.result.Judgment;
+import io.github.markpollack.judge.judgment.Check;
+import io.github.markpollack.judge.judgment.Judgment;
 
 /**
  * Reference-based recall against a published answer key.
@@ -61,6 +61,8 @@ public class AnswerKeyRecallJudge implements Judge {
 	public record Entry(String id, String name, String essence, String expectedSeverity, String adjudication) {
 	}
 
+	private final Supplier<? extends Path> workspace;
+
 	private final Function<Path, AgentClient> agentClientFactory;
 
 	private final Path answerKeyPath;
@@ -71,8 +73,18 @@ public class AnswerKeyRecallJudge implements Judge {
 
 	private final int minMatches;
 
-	public AnswerKeyRecallJudge(Function<Path, AgentClient> agentClientFactory, Path answerKeyPath, String reportPath,
-			int votes, int minMatches) {
+	/**
+	 * Creates the judge for one workspace.
+	 * @param workspace supplies the workspace holding the report, read once per execution
+	 * @param agentClientFactory creates the adjudicating agent for a workspace
+	 * @param answerKeyPath the answer key the benchmark ships
+	 * @param reportPath the report's path relative to the workspace
+	 * @param votes adjudication rounds, at least 1
+	 * @param minMatches entries that must be recovered to pass; 0 means all of them
+	 */
+	public AnswerKeyRecallJudge(Supplier<? extends Path> workspace, Function<Path, AgentClient> agentClientFactory,
+			Path answerKeyPath, String reportPath, int votes, int minMatches) {
+		this.workspace = workspace;
 		this.agentClientFactory = agentClientFactory;
 		this.answerKeyPath = answerKeyPath;
 		this.reportPath = reportPath;
@@ -81,8 +93,8 @@ public class AnswerKeyRecallJudge implements Judge {
 	}
 
 	@Override
-	public Judgment judge(JudgmentContext context) {
-		Path workspace = context.workspace();
+	public Judgment judge() {
+		Path workspace = this.workspace.get();
 		Path report = workspace.resolve(reportPath);
 		if (!Files.isRegularFile(report)) {
 			return Judgment.abstain("Report not found, so recall is unmeasurable: " + reportPath);
@@ -149,13 +161,14 @@ public class AnswerKeyRecallJudge implements Judge {
 					if (ok) {
 						placedOk++;
 					}
-					checks.add(new Check("placement:" + e.id(), ok,
-							"placed at " + sev.toUpperCase(Locale.ROOT) + " (expected ≥ "
-									+ e.expectedSeverity().toUpperCase(Locale.ROOT) + ")"));
+					String placement = "placed at " + sev.toUpperCase(Locale.ROOT) + " (expected ≥ "
+							+ e.expectedSeverity().toUpperCase(Locale.ROOT) + ")";
+					checks.add(ok ? Check.pass("placement:" + e.id(), placement)
+							: Check.fail("placement:" + e.id(), placement));
 				}
 			}
 			else {
-				checks.add(new Check(e.id(), false, e.name() + " — NOT FOUND"));
+				checks.add(Check.fail(e.id(), e.name() + " — NOT FOUND"));
 			}
 		}
 

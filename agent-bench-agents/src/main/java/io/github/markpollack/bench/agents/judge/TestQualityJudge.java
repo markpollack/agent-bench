@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -21,9 +22,8 @@ import io.github.markpollack.agents.claude.ClaudeAgentModel;
 import io.github.markpollack.agents.claude.ClaudeAgentOptions;
 import io.github.markpollack.agents.model.AgentModel;
 import io.github.markpollack.judge.Judge;
-import io.github.markpollack.judge.context.JudgmentContext;
-import io.github.markpollack.judge.result.Check;
-import io.github.markpollack.judge.result.Judgment;
+import io.github.markpollack.judge.judgment.Check;
+import io.github.markpollack.judge.judgment.Judgment;
 
 /**
  * LLM-based judge that evaluates practice adherence of a test suite against a rubric
@@ -39,26 +39,37 @@ public class TestQualityJudge implements Judge {
 
 	private static final Pattern JSON_BLOCK = Pattern.compile("\\{[\\s\\S]*\\}");
 
+	private final Supplier<? extends Path> workspace;
+
 	private final Function<Path, AgentClient> agentClientFactory;
 
 	private final Path judgePromptPath;
 
 	private final double passThreshold;
 
-	public TestQualityJudge(Function<Path, AgentClient> agentClientFactory, Path judgePromptPath,
-			double passThreshold) {
+	/**
+	 * Creates the judge for one workspace.
+	 * @param workspace supplies the workspace to evaluate, read once per execution
+	 * @param agentClientFactory creates the evaluating agent for a workspace
+	 * @param judgePromptPath the rubric prompt
+	 * @param passThreshold the average criterion score that passes, 0 to 1
+	 */
+	public TestQualityJudge(Supplier<? extends Path> workspace, Function<Path, AgentClient> agentClientFactory,
+			Path judgePromptPath, double passThreshold) {
+		this.workspace = workspace;
 		this.agentClientFactory = agentClientFactory;
 		this.judgePromptPath = judgePromptPath;
 		this.passThreshold = passThreshold;
 	}
 
-	public TestQualityJudge(Function<Path, AgentClient> agentClientFactory, Path judgePromptPath) {
-		this(agentClientFactory, judgePromptPath, 0.5);
+	public TestQualityJudge(Supplier<? extends Path> workspace, Function<Path, AgentClient> agentClientFactory,
+			Path judgePromptPath) {
+		this(workspace, agentClientFactory, judgePromptPath, 0.5);
 	}
 
 	@Override
-	public Judgment judge(JudgmentContext context) {
-		Path workspace = context.workspace();
+	public Judgment judge() {
+		Path workspace = this.workspace.get();
 
 		if (!hasTestFiles(workspace)) {
 			logger.info("No test files found in {}", workspace);
@@ -115,7 +126,8 @@ public class TestQualityJudge implements Judge {
 				double rawScore = criterion.has("score") ? criterion.get("score").asDouble() : 0.0;
 				String evidence = criterion.has("evidence") ? criterion.get("evidence").asText() : "";
 				double score = Math.max(0.0, Math.min(1.0, rawScore));
-				checks.add(new Check(name, score >= passThreshold, String.format("%.2f — %s", score, evidence)));
+				String message = String.format("%.2f — %s", score, evidence);
+				checks.add(score >= passThreshold ? Check.pass(name, message) : Check.fail(name, message));
 				scoreSum += score;
 				count++;
 			}

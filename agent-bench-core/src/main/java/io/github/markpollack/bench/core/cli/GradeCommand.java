@@ -13,11 +13,11 @@ import io.github.markpollack.bench.core.benchmark.Benchmark;
 import io.github.markpollack.bench.core.benchmark.BenchmarkCatalog;
 import io.github.markpollack.bench.core.benchmark.BenchmarkTask;
 import io.github.markpollack.bench.core.benchmark.JudgeFactory;
+import io.github.markpollack.bench.core.benchmark.TrialEvidence;
 import io.github.markpollack.bench.core.result.FailureMode;
 import io.github.markpollack.bench.core.result.TrialResult;
 import io.github.markpollack.judge.Judge;
-import io.github.markpollack.judge.context.JudgmentContext;
-import io.github.markpollack.judge.result.Judgment;
+import io.github.markpollack.judge.judgment.Judgment;
 
 /**
  * Handles the {@code grade} CLI command. Evaluates an agent's workspace using the
@@ -51,14 +51,12 @@ public class GradeCommand {
 		BenchmarkTask task = findTask(benchmark, taskId);
 
 		// Build judge from benchmark jury config
-		Judge judge = judgeFactory.createFromConfig(benchmark.juryConfig());
-
-		// Evaluate
-		JudgmentContext context = JudgmentContext.builder().workspace(workspace).goal(task.instruction()).build();
+		Judge judge = judgeFactory.createFromConfig(benchmark.juryConfig())
+			.apply(new TrialEvidence(workspace, task.instruction(), task.metadata()));
 
 		TrialResult result;
 		try {
-			Judgment judgment = judge.judge(context);
+			Judgment judgment = judge.judge();
 			boolean resolved = judgment.pass();
 			result = new TrialResult(task.id(), resolved, Map.of("judgment", judgment.reasoning()),
 					resolved ? FailureMode.NONE : FailureMode.TEST_FAILURE, null, 0, workspace);
